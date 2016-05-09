@@ -1,0 +1,72 @@
+---
+layout: post
+title:  "Groovy - 与Java的不同之处"
+date:   2016-05-09 11:15:42 +0800
+categories: groovy
+---
+_这篇文章是官网文章的翻译 - [Differences with Java](http://groovy-lang.org/differences.html)_
+
+Groovy的设计原则是对Java程序员尽可能友好，一个Java程序员写起Groovy代码的时候，感觉越自然越好。
+显然，从我自己的经历看，Groovy显然已经做到的这一点。
+
+
+#### 1. 默认导入的包 (Default imports)
+
+这些最常用的Java packages都已经被默认导入，尤其在写groovy script的时候会非常方便。
+
+ * java.io.*
+ * java.lang.*
+ * java.math.BigDecimal
+ * java.math.BigInteger
+ * java.net.*
+ * groovy.lang.*
+ * groovy.util.*
+
+#### 2. 不一样的方法重载 (Multi-methods)
+
+方法重载，简单的说就是方法同名不同参。
+在Java中，参数的类型是在编译期就确定下来的，所以哪个方法会被调用在编译时就已经确定下来了。
+而Groovy中，参数的类型是在运行期推导出来的，所以哪个方法被调用得看运行期的推导出来的参数类型。
+
+这个例子很好的说明了Groovy和Java的区别。
+Java中会打印2，因为参数类型是根据代码声明在编译期就确认了。
+而Groovy则会打印1，因为在运行期做类型推导知道参数的实际类型是String,然后会以String类型来调用方法。
+
+{% highlight java %}
+int method(String arg) {
+  return 1;
+}
+
+int method(Object arg) {
+  return 2;
+}
+
+Object obj = "Object";
+System.out.println(method(obj));
+{% endhighlight %}
+
+#### 3. 数组初始化 (Array initializers)
+
+由于Groovy中的花括号__{ }__是专门用于声明Closure的，所以针对数组初始化必须用方括号来替代：
+
+{% highlight groovy %}
+int[] array = [1, 2, 3]
+{% endhighlight %}
+
+#### 4. 包一级的可见性 (Package scope visibility)
+
+Groovy跟Java一样，如果不知道修饰符就是默认包可见，或者直接使用标注@PackageScope
+
+{% highlight groovy %}
+class Person {
+  @PackageScope String name
+}
+
+class Person {
+  String name   // 其实Groovy自动为name生成了Getter/Setter方法
+}
+{% endhighlight %}
+
+#### 5. ARM blocks
+
+ARM - Automatic Resource Management
