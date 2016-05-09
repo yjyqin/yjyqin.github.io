@@ -1,0 +1,37 @@
+---
+layout: post
+title:  "Groovy - 写在前面和介绍"
+date:   2016-05-09 10:36:42 +0800
+categories: groovy
+---
+### 写在前面
+
+我很喜欢groovy，断断续续用了几个月的时间，甚至用groovy/grails写了几个内部用的小工具，生产率相当不错，也向身边
+的同事推荐使用groovy来替代我们的java项目。
+
+准备写个系列，好好的整理一下关于groovy的一切。
+
+{% highlight groovy %}
+def helloWorld = { arg ->
+  println 'Hello World!'
+}
+
+helloWorld().call
+// => print 'Hello World' in closure way
+{% endhighlight %}
+
+### 介绍
+
+关于Groovy的最权威、最精简的介绍应该算[Groovy on Wikipedia]，可以很快速的了解一下groovy的前世今生。
+
+我自己简单的总结一下关于Groovy的特点：
+
+* Groovy可以无缝的操作Java代码，甚至用groovy的编译其来编译java代码
+* GroovyBean更加符合普通人对JavaBean的需求 _再没有无休无止的getter/setter在你的代码里_
+* Groovy对metaprogramming有着极其强大的支持和实现
+* Groovy支持函数式编程 _个人觉得比Java8的风格更易于接受_
+* XML/Json的支持 _读写简单到只须一行代码_
+* 字符串插值 _如果你跟我一样用过ruby， 你会喜欢这个功能的_
+* Traits _这个特性我来没尝试过_
+
+[Groovy on Wikipedia]: https://en.wikipedia.org/wiki/Groovy_(programming_language)
