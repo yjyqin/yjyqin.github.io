@@ -70,3 +70,36 @@ class Person {
 #### 5. ARM blocks
 
 ARM - Automatic Resource Management
+
+这是Java7中引入的新特性，可以隐式关闭各种i/o资源，无须写一堆close。 
+
+> 这个特性我完全不知道，所以特意google了一下，发现几个有趣的链接
+>
+> * Joshua Bloch 最早关于这个特性的讨论贴 [Proposal: Automatic Resource Management](http://mail.openjdk.java.net/pipermail/coin-dev/2009-February/000011.html)
+>
+> * Oracle官方的介绍 [Better Resource Management with Java SE 7: Beyond Syntactic Sugar](http://www.oracle.com/technetwork/articles/java/trywithresources-401775.html)
+
+{% highlight java %}
+Path file = new Path("/var/tmp/test.log")
+Charset charset = Charset.forName("UTF-8")
+try (BufferedReader reader = Files.newBufferedReader(file, charset)) {
+  String line;
+  while ((line = reader.readLine()) != null) {
+    System.out.println(line);
+  }
+} catch (IOException ex) {
+  ex.printStackTrace();
+}
+
+// 这种写法的好处就是无论如何, File/Reader都会被自动释放
+{% endhighlight %}
+
+回到Groovy中，这其实根本就不是一个问题。Groovy对于java.io.File类的扩展，已经自动支持I/O资源的释放了。
+
+{% highlight groovy %}
+new File('/var/tmp/test.log').eachLine('UTF-8') {
+  println it
+}
+{% endhighlight %}
+
+#### 6. 内部类 （Inner Classes)
