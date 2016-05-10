@@ -31,7 +31,7 @@ new File(baseDir, 'access.log').eachLine { line, lineNo ->
 {% endhighlight %}
 
 这个例子中，如果eachLine出现任何异常，groovy都会确保文件资源被关闭，类似ARM的功能。
-不过老实讲，这个例子根本不能体现`java.io.File`被Groovy扩展到了何种地步
+不过老实讲，这个例子根本不能体现`java.io.File`被Groovy扩展到了何种地步，例如文件内容遍历
 
 > * eachByte
 > * eachDir, eachDirMatch, eachDirRecurse
