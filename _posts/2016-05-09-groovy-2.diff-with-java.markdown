@@ -5,13 +5,13 @@ date:   2016-05-09 11:15:42 +0800
 categories: groovy
 tags: [programming, groovy]
 ---
-_这篇文章是官网文章的翻译 - [Differences with Java](http://groovy-lang.org/differences.html)_
+_这篇文章是官网文章的简单翻译 - [Differences with Java](http://groovy-lang.org/differences.html)_
 
 Groovy的设计原则是对Java程序员尽可能友好，一个Java程序员写起Groovy代码的时候，感觉越自然越好。
 显然，从我自己的经历看，Groovy显然已经做到的这一点。
 
 
-#### 1. 默认导入的包 (Default imports)
+#### 1. Default imports
 
 这些最常用的Java packages都已经被默认导入，尤其在写groovy script的时候会非常方便。
 
@@ -23,7 +23,7 @@ Groovy的设计原则是对Java程序员尽可能友好，一个Java程序员写
  * groovy.lang.*
  * groovy.util.*
 
-#### 2. 不一样的方法重载 (Multi-methods)
+#### 2. Multi-methods
 
 方法重载，简单的说就是方法同名不同参。
 在Java中，参数的类型是在编译期就确定下来的，所以哪个方法会被调用在编译时就已经确定下来了。
@@ -46,7 +46,7 @@ Object obj = "Object";
 System.out.println(method(obj));
 {% endhighlight %}
 
-#### 3. 数组初始化 (Array initializers)
+#### 3. Array initializers
 
 由于Groovy中的花括号__{ }__是专门用于声明Closure的，所以针对数组初始化必须用方括号来替代：
 
@@ -54,7 +54,7 @@ System.out.println(method(obj));
 int[] array = [1, 2, 3]
 {% endhighlight %}
 
-#### 4. 包一级的可见性 (Package scope visibility)
+#### 4. Package scope visibility
 
 Groovy跟Java一样，如果不知道修饰符就是默认包可见，或者直接使用标注@PackageScope
 
@@ -95,7 +95,7 @@ try (BufferedReader reader = Files.newBufferedReader(file, charset)) {
 // 这种写法的好处就是无论如何, File/Reader都会被自动释放
 {% endhighlight %}
 
-回到Groovy中，这其实根本就不是一个问题。Groovy对于java.io.File类的扩展，已经自动支持I/O资源的释放了。
+回到Groovy中，这其实根本就不是一个问题。Groovy对于`java.io.File`类的扩展，已经自动支持I/O资源的释放了。
 
 {% highlight groovy %}
 new File('/var/tmp/test.log').eachLine('UTF-8') {
@@ -103,4 +103,125 @@ new File('/var/tmp/test.log').eachLine('UTF-8') {
 }
 {% endhighlight %}
 
-#### 6. 内部类 （Inner Classes)
+#### 6. Inner Classes
+
+Groovy中内部类的实现看上去更想是创建Closure，好坏参半。
+比如说，内部类访问私有属性或者方法会有问题，但是本地变量却又不需要声明成final型
+
+##### 6.1 Static Inner Classes
+
+如果你真的需要使用内部类，请声明成静态的
+
+{% highlight groovy %}
+class A {
+  static class B {}
+}
+
+new A.B()
+{% endhighlight %}
+
+##### 6.2 Anonymous Inner Classes
+
+{% highlight groovy %}
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+
+CountDownLatch called = new CountDownLatch(1)
+
+Timer timer = new Timer()
+timer.schedule(new TimerTask() {
+  void run() {
+    called.countDown()
+  }
+}, 0)
+
+assert called.await(10, TimeUnit.SECONDS)
+{% endhighlight %}
+
+##### 6.3  Creating Instances of Non-Static Inner Classes
+
+{% highlight java %}
+// Java way
+public class Y {
+  public class X {}
+  public X foo() {
+    return new X();
+  }
+  
+  public static X createX(Y y) {
+    return y.new X();
+  }
+}
+{% endhighlight %}
+
+{% highlight groovy %}
+// "y.new X()" is not supported in Groovy, so you have to do in groovy way
+public class Y {
+  public class X {}
+  public X foo() {
+    return new X()
+  }
+  
+  public static X create(Y y) {
+    return new X(y)
+  }
+}
+{% endhighlight %}
+
+#### 7. Lambdas
+
+这个特性有太多介绍的文章，groovy不支持lambda的语法，但是可以用Closure实现同样的功能
+
+#### 8. GString
+
+双引号生命的字符串其实是Gstring类型，支持字符串内插
+
+#### 9. String and Character literals
+
+因为单引号被Groovy用来声明`java.lang.String`, 所以默认情况下单引号声明的单个字符其实是个字符串
+
+{% highlight groovy %}
+assert 'c'.getClass() == String
+{% endhighlight %}
+
+只有在显式声明成char类型，groovy才会将单引号字符串转型为字符型
+
+{% highlight groovy %}
+char ch = 'a'
+assert Character.digit(ch, 16) == 10
+{% endhighlight %}
+
+#### 10. Primitives and wrappers
+
+Java中的基本类型，如int, double, long等等，Groovy都会自动包装成相应的类，这点在作为参数调用时要尤其注意
+
+{% highlight groovy %}
+int i
+m(i)
+
+void m(long i) {
+  println "am long"
+} // 在Java中，会调用这个方法
+
+void m(Integer i) {
+  println "am Integer"
+} // 在Groovy中，会调用这个方法
+{% endhighlight %}
+
+#### 11. Behaviour of `==`
+
+Java中的`==`意味着两个对象在物理上完全一样，而Groovy中的`==`会被转换成`a.compareTo(b) == 0`，
+这就意味着，一旦a和b都实现了`java.lang.Comparable`，并且`a.equals(b)`，在Groovy中就是`==`的。
+
+#### 12. Conversions
+
+这个主要针对boolean/short/char/int...这些基础类型，Groovy因为提供了自动包装`(autowrapper)`所以会略复杂一些
+
+#### 13. Extra Keywords
+
+Groovy中添加了几个关键字
+
+* `as`
+* `def`
+* `in`
+* `trait`
