@@ -3,7 +3,7 @@ layout: post
 title:  "Groovy - GDK介绍"
 date:   2016-05-11 00:16:42 +0800
 categories: groovy
-tags: [programming, groovy]
+tags: [programming,  groovy]
 ---
 ### 写在前面
 
@@ -11,9 +11,9 @@ _本文是对官网文章的简单翻译 - [The Groovy Development Kit](http://g
 
 ### Working with IO
 
-个人感觉Groovy对于IO部分的增强，简直让程序员爽歪歪了
+个人感觉Groovy对于IO部分的增强, 简直让程序员爽歪歪了
 
-关于IO，以下几个类是必须了解和掌握的，推荐阅读GDK中扩展的JavaDoc
+关于IO, 以下几个类是必须了解和掌握的, 推荐阅读GDK中扩展的JavaDoc
 
 * [`java.io.File`](http://docs.groovy-lang.org/latest/html/groovy-jdk/java/io/File.html)
 * [`java.io.InputStream`](http://docs.groovy-lang.org/latest/html/groovy-jdk/java/io/InputStream.html)
@@ -25,46 +25,46 @@ _本文是对官网文章的简单翻译 - [The Groovy Development Kit](http://g
 #### 1.1 Reading files
 
 {% highlight groovy %}
-new File(baseDir, 'access.log').eachLine { line, lineNo ->
+new File(baseDir,  'access.log').eachLine { line,  lineNo ->
     println "${lineNo}: ${line}"
 }
 {% endhighlight %}
 
-这个例子中，如果eachLine出现任何异常，groovy都会确保文件资源被关闭，类似ARM的功能。
-不过老实讲，这个例子根本不能体现`java.io.File`被Groovy扩展到了何种地步，例如文件内容遍历
+这个例子中, 如果eachLine出现任何异常, groovy都会确保文件资源被关闭, 类似ARM的功能.
+不过老实讲, 这个例子根本不能体现`java.io.File`被Groovy扩展到了何种地步, 例如文件遍历
 
 > * eachByte
-> * eachDir, eachDirMatch, eachDirRecurse
-> * eachFile, eachFileMatch, eachFileRecurse
+> * eachDir,  eachDirMatch,  eachDirRecurse
+> * eachFile,  eachFileMatch,  eachFileRecurse
 > * eachLine
 > * eachObject
 
 下面是将文件按行读入到一个字符串列表中去
 
 {% highlight groovy %}
-def lines1 = new File(baseDir, 'access.log').collect { it }
+def lines1 = new File(baseDir,  'access.log').collect { it }
 
-def lines2 = new File(baseDir, 'access.log') as String[]
+def lines2 = new File(baseDir,  'access.log') as String[]
 {% endhighlight %}
 
-如果你想文件读入到一个byte[]中去，
+如果你想文件读入到一个byte[]中去, 
 
 {% highlight groovy %}
-byte[] content = new File(baseDir, 'access.dat').bytes
+byte[] content = new File(baseDir,  'access.dat').bytes
 {% endhighlight %}
 
 有时候你只是想得到一个`InputStream`
 
 {% highlight groovy %}
-def ins = new File(baseDir, 'access.dat').newInputStream()
+def ins = new File(baseDir,  'access.dat').newInputStream()
 ...
 ins.close()
 {% endhighlight %}
 
-其实，你不需要显式的关闭`InputStream`
+其实, 你不需要显式的关闭`InputStream`
 
 {% highlight groovy %}
-new File(baseDir, 'access.dat').withInputStream { stream ->
+new File(baseDir,  'access.dat').withInputStream { stream ->
   ...
 }
 {% endhighlight %}
@@ -74,7 +74,7 @@ new File(baseDir, 'access.dat').withInputStream { stream ->
 利用`Writer`来写入文件
 
 {% highlight groovy %}
-new File(baseDir, 'access.dat').withWriter('utf-8') { writer ->
+new File(baseDir,  'access.dat').withWriter('utf-8') { writer ->
     writer.writeLine 'a frog jumps'
 }
 {% endhighlight %}
@@ -82,7 +82,104 @@ new File(baseDir, 'access.dat').withWriter('utf-8') { writer ->
 或者利用`<<`更简单的实现
 
 {% highlight groovy %}
-new File(baseDir, 'access.dat') << 'a frog jumps'
+new File(baseDir,  'access.dat') << 'a frog jumps'
 {% endhighlight %}
 
 #### 1.3 Traversing file trees
+
+什么都不说了, 直接上代码比较直观
+
+{% highlight groovy %}
+dir.eachFile { file ->
+  println file.name
+}
+
+dir.eachFileMatch(~/.*\.txt/) { file ->
+  println file.length
+}
+
+dir.eachFileRecurse { file ->
+  println file.name
+}
+
+dir.eachFileRecurse(FileTypes.FILES) { file ->
+  println file.length
+}
+{% endhighlight %}
+
+如果想对遍历过程作更多的自定义操作, 可以使用`traverse`方法
+
+{% highlight groovy %}
+dir.traverse { file ->
+  if (file.directory && file.name == 'bin') {
+    FileVisitResult.TERMINATE
+  } else {
+    FileVisitResult.CONTINUE
+  }
+}
+
+{% endhighlight %}
+
+#### 1.4 Data and objects
+
+Java中经常需要使用`java.io.InputStream`和`java.io.OutputStream`来做对象序列化和反序列化, 在groovy中可以很方便的使用`Input/OutputStream`
+
+{% highlight groovy %}
+String message = "hello world"
+
+// serialize
+file.withDataOutputStream { out ->
+  out.writeBoolean(Boolean.TRUE)
+  out.writeUTF(message)
+}
+
+// deserialize
+file.withDataInputStream { in ->
+  assert in.readUTF() == message
+}
+{% endhighlight %}
+
+如果需要序列化的对象已经实现了`java.io.Serializable`
+
+{% highlight groovy %}
+Person p = new Person(name: 'Jason',  age: 37)
+
+file.withDataOutputStream { out ->
+  out.writeObject(p)
+}
+
+file.withDataInputStream { in ->
+  def p2 = in.readObject()
+  assert p2.name == p.name
+  assert p2.age == p.age
+}
+
+{% endhighlight %}
+
+#### 1.5 Executing external processes
+
+Java中想启动一个进程去执行某个命令的话, 真是一堆的繁琐, 而Groovy仅仅需要一行代码就可以了.
+
+{% highlight groovy %}
+def proc = "hostname; date".execute()
+println proc.text
+{% endhighlight %}
+
+或者对输出按行处理一下
+
+{% highlight groovy %}
+def proc = "hostname; date".execute()
+proc.in.eachLine { line ->
+  println line
+}
+{% endhighlight %}
+
+不过呢, 这里需要注意一下：`in`实际上对应着STDOUT, 而`out`才是对应着STDIN, 可以把这个proc对象认为是成sub-process的下一个管道(pipe) 
+
+另外, 许多命令也许并不能如同built-in一样直接执行, 需要特别处理一下.
+
+{% highlight groovy %}
+// windows
+def proc = "cmd /c dir".execute()
+{% endhighlight %}
+
