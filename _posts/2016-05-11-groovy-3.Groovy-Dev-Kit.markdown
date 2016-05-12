@@ -183,3 +183,174 @@ proc.in.eachLine { line ->
 def proc = "cmd /c dir".execute()
 {% endhighlight %}
 
+在某些平台上(具体哪个，我也不知)，由于为STDIN和STDOUT分配的buffer size不够大，
+快速的写入到STDIN或者从STDOUT读取的时候，可能会造成运行命令的sub-process被锁住，甚至死锁。
+基于这个原因，Groovy提供了额外的帮助方法来简化stream的处理。
+
+这个例子说明怎么样得到全部的命令行输出(STDOUT & STDERR):
+
+{% highlight groovy %}
+def proc = "rm -f too.tmp".execute([], tmpDir)
+proc.consumeProcessOutput()
+proc.waitFor()
+{% endhighlight %}
+
+如果是命令行，那么pipe就不能不提。
+
+{% highlight groovy %}
+// ls | tr -d o | tr -d e | tr -d i
+proc1 = 'ls'.execute()
+proc2 = 'tr -d o'.execute()
+proc3 = 'tr -d e'.execute()
+proc4 = 'tr -d i'.execute()
+
+proc1 | proc2 | proc3 | proc4
+proc4.waitFor()
+
+if (proc4.exitValue()) {
+  println proc4.err.text
+} else {
+  println proc4.text
+}
+{% endhighlight %}
+
+处理错误信息
+
+{% highlight groovy %}
+def sout = new StringBuilder()
+def serr = new StringBuilder()
+
+proc2 = 'tr -d o'.execute()
+proc3 = 'tr -d e'.execute()
+proc4 = 'tr -d i'.execute()
+proc4.consumeProcessOutput(sout, serr)
+
+proc2 | proc3 | proc4
+
+[proc2, proc3].each { it.consumeProcessErrorStream(serr) }
+
+proc2.withWriter { writer ->
+  writer << 'testfile.groovy'
+}
+
+proc4.waitForOrKill(1000)
+
+println "STDOUT: ${sout}"
+println "STDERR: ${serr}"
+{% endhighlight %}
+
+### Working with collections
+
+Java本身的集合类框架已经设计得非常成熟了，但你会发现Groovy中提供了更多更丰富的功能，而且很多都在Java8被官方采纳。
+
+#### Lists
+
+一些基本用法
+
+{% highlight groovy %}
+/* --- define a list --- */
+def list1 = []   // empty list
+def list2 = [5, 6, 7, 8]
+
+/* --- an implementation of `java.util.List` --- */
+def list3 = ['a', 'b', 'c']
+def list4 = new ArrayList<String>(list3)
+
+assert list3 == list4
+
+def list5 = list3.clone()
+assert list5 == list3
+
+/* --- index --- */
+def list6 = [5, 6, 7, 8]
+
+assert list6.size() == 4
+assert list6.getClass() == ArrayList
+assert list6[2] == 7
+assert list6.get(2) == 7
+
+list6[2] = 9
+assert list6 == [5, 6, 9, 8,]   // trailing comma OK
+
+list6.putAt(2, 10)
+assert list6 == [5, 6, 10, 8]
+
+assert list6.set(2, 11) == 10
+assert list6 == [5, 6, 11, 8]
+
+assert list6.get(-2) == 11    // nagative indices
+
+/* --- as boolean --- */
+assert ![]    // empty list is false
+
+/* --- iterating --- */
+[1, 2, 3].each { println "item: $it" }
+
+[1, 2, 3].eachWithIndex { it, i -> println "item[$i]: $it" }
+{% endhighlight %}
+
+来一些高级点的用法，按照现在流行的话说，函数式风格
+
+{% highlight groovy %}
+/* --- filtering and searching --- */
+assert [1, 2, 3].find { it > 1 } == 2
+assert [1, 2, 3].findAll { it > 1 } == [2, 3]
+
+
+assert ['a', 'b', 'c', 'd', 'c'].findIndexOf { it in ['c', 'e', 'g'] } == 2
+assert ['a', 'b', 'c', 'd', 'c'].indexOf('c') == 2
+assert ['a', 'b', 'c', 'd', 'c'].indexOf('z') == -1
+assert ['a', 'b', 'c', 'd', 'c'].lastIndexOf('c') == 4
+
+
+assert [1, 2, 3].every { it < 5 }
+assert [1, 2, 3].any { it < 5 }
+
+
+assert [1, 2, 3, 4, 5, 6].sum() == 21
+assert ['a', 'b', 'c', 'd', 'e'].sum {
+  it == 'a' ? 1 : it == 'b' ? 2 : it == 'c' ? 3 : it == 'd' ? 4 : it == 'e' ? 5 : 0
+} == 15
+assert ['a', 'b', 'c', 'd', 'e'].sum() == 'abcde'
+assert [['a', 'b'], ['c', 'd']].sum() == ['a', 'b', 'c', 'd']
+assert [].sum(1000) == 1000   // an initial value can be provided
+assert [1, 2, 3].sum(1000) == 1006
+
+
+assert [1, 2, 3].join('-') == '1-2-3'
+assert [1, 2, 3].inject('counting: ') {
+  str, item -> str + item
+} == 'counting: 123'
+assert [1, 2, 3].inject(0) { count, item -> count + item } == 6
+
+
+assert [9, 4, 2, 10, 5].max() == 10
+assert [9, 4, 2, 10, 5].min() == 2
+assert ['x', 'y', 'a', 'z'].max() == 'z'    // any thing comparable
+assert ['abc', 'z', 'xyzuvw', 'hello', '321'].max { it.size() } == 'xyzuvw'
+
+Comparator mc1 = { a, b -> a == b ? 0 : (a < b ? -1 : 1) }
+assert [7, 4, 9, -2, 11, -13].max(mc1) == 11
+
+Comparator mc2 = { a, b -> a == b ? 0 : (Math.abs(a) < Math.abs(b) ? -1 : 1) }
+assert [assert [7, 4, 9, -2, 11, -13].max(mc2) == 13
+{% endhighlight %}
+
+`<<`可以用来append, 非常简洁好用
+
+{% highlight groovy %}
+def list = []
+
+list << 5
+assert list == [5]
+
+list << ['m', 'o']
+assert list == [5, ['m', 'o']]
+
+assert ([1, 2] << 3 << [4, 5] << 6) == [1, 2, 3, [4, 5], 6]
+
+assert ([1, 2, 3] << 4) == ([1, 2, 3].leftShift(4))
+
+assert [1, 2] + 3 + [4, 5] + 6 == [1, 2, 3, 4, 5, 6]
+assert [1, 2].plus(3).plus([4, 5]).plus(6) == [1, 2, 3, 4, 5, 6]
+{% endhighlight %}
