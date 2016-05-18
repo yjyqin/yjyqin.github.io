@@ -4,23 +4,25 @@ layout: default
 
 <div class="container">
 
-  <ul class="post-list">
-    {% for post in site.posts %}
-      <li>
-        <span class="post-meta">{{ post.date | date: "%Y-%m-%d" }}</span>
+  <p>最近更新</p>
 
-        <span class="post-meta">
-          <a class="post-link" href="{{ post.url | prepend: site.baseurl }}">
+  <ul class="list-unstyled">
+    {% for post in site.posts %}
+      <li style="padding:  5px;">
+        <span class="text-danger">
+          <i>{{ post.date | date: "%Y-%m-%d" }}</i>
+        </span>
+
+        <span style="padding-left: 10px;">
+          <a href="{{ post.url | prepend: site.baseurl }}" target="_blank">
             {{ post.title }}
           </a>
+          {% if post.category == 'post' %}
+            <span class="label label-primary">{{ post.topic }}</span>
+          {% endif %}
         </span>
       </li>
     {% endfor %}
   </ul>
-
-  <!-- I don't need RSS -->
-  <!--
-    <p class="rss-subscribe">subscribe <a href="{{ "/feed.xml" | prepend: site.baseurl }}">via RSS</a></p>
-  -->
 
 </div>

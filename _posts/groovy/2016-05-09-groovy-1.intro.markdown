@@ -2,8 +2,8 @@
 layout: post
 title:  "Groovy - 写在前面和介绍"
 date:   2016-05-09 10:36:42 +0800
-categories: groovy
-tags: [programming, groovy]
+category: series
+topic: groovy
 ---
 ### 写在前面
 

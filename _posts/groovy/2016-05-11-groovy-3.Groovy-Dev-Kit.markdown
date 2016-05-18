@@ -2,8 +2,8 @@
 layout: post
 title:  "Groovy - GDK介绍"
 date:   2016-05-11 00:16:42 +0800
-categories: groovy
-tags: [programming,  groovy]
+category: series
+topic: groovy
 ---
 ### 写在前面
 
