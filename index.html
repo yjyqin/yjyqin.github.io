@@ -2,27 +2,43 @@
 layout: default
 ---
 
-<div class="container">
+<div class="row">
 
-  <p>最近更新</p>
+  <div class="col-md-8">
 
-  <ul class="list-unstyled">
-    {% for post in site.posts %}
-      <li style="padding:  5px;">
-        <span class="text-danger">
-          <i>{{ post.date | date: "%Y-%m-%d" }}</i>
-        </span>
+    <h3 class="page-header">最近更新</h3>
 
-        <span style="padding-left: 10px;">
-          <a href="{{ post.url | prepend: site.baseurl }}" target="_blank">
-            {{ post.title }}
-          </a>
-          {% if post.category == 'post' %}
-            <span class="label label-primary">{{ post.topic }}</span>
+    <ul class="list-unstyled">
+      {% for post in site.posts %}
+        <li style="padding:  5px;">
+          <span class="text-danger">
+            <i>{{ post.date | date: "%Y-%m-%d" }}</i>
+          </span>
+
+          <span style="padding-left: 10px;">
+            <a href="{{ post.url | prepend: site.baseurl }}" target="_blank">
+              {{ post.title }}
+            </a>
+          </span>
+
+          {% if post.category == 'series' %}
+            <span class="label label-primary" style="margin-left: 5px;">{{ post.topic }}</span>
           {% endif %}
-        </span>
-      </li>
+        </li>
+      {% endfor %}
+    </ul>
+
+  </div>
+
+<!--   <div class="col-md-4">
+    <h3 class="page-header">专题</h3>
+
+    <ul class="list-unstyled">
+    {% for category in site.categories %}
+      <li><a name="{{ category | first }}">{{ category | first }}</a></li>
     {% endfor %}
-  </ul>
+    </ul>
+    
+  </div> -->
 
 </div>

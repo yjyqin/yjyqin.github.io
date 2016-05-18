@@ -2,8 +2,7 @@
 layout: post
 title:  "Groovy - 与Java的不同之处"
 date:   2016-05-09 11:15:42 +0800
-category: series
-tpoic: groovy
+category: Groovy
 ---
 _这篇文章是官网文章的简单翻译 - [Differences with Java](http://groovy-lang.org/differences.html)_
 
