@@ -36,7 +36,7 @@ layout: default
     {% for topic in site.collections %}
       {% if topic.label != 'posts' %}
       <div class="bs-callout bs-callout-warning">
-        <h4>{{ topic.title }}</h4>
+        <h4>{{ topic.label | capitalize }}</h4>
         <p>
           <ul style="list-style-type: decimal; ">
             {% for post in topic.docs %}
