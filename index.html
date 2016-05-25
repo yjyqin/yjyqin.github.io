@@ -2,7 +2,7 @@
 layout: default
 ---
 
-<div class="row">
+<div class="row-fluid">
 
   <div class="col-md-8">
 
@@ -30,15 +30,24 @@ layout: default
 
   </div>
 
-<!--   <div class="col-md-4">
+  <div class="col-md-4">
     <h3 class="page-header">专题</h3>
 
-    <ul class="list-unstyled">
-    {% for category in site.categories %}
-      <li><a name="{{ category | first }}">{{ category | first }}</a></li>
+    {% for topic in site.collections %}
+      {% if topic.label != 'posts' %}
+      <div class="bs-callout bs-callout-warning">
+        <h4>{{ topic.title }}</h4>
+        <p>
+          <ul style="list-style-type: decimal; ">
+            {% for post in topic.docs %}
+              <li><a href="{{ post.url }}" target="_blank">{{ post.title }}</a>
+            {% endfor %}
+          </ul>
+        </p>
+      </div>
+      {% endif %}
     {% endfor %}
-    </ul>
-    
-  </div> -->
+
+  </div>
 
 </div>

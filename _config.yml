@@ -17,3 +17,9 @@ github_username:  yjyqin
 
 # Build settings
 markdown: kramdown
+
+# Self defined collections
+collections:
+  Groovy:
+    output: true
+    permalink: /:collection/:path

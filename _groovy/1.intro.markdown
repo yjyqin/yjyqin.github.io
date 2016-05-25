@@ -1,8 +1,7 @@
 ---
 layout: post
-title:  "Groovy - 写在前面和介绍"
+title:  "写在前面和介绍"
 date:   2016-05-09 10:36:42 +0800
-category: Groovy
 ---
 ### 写在前面
 
